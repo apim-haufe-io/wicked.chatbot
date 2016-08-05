@@ -1,0 +1,3 @@
+FROM ${DOCKER_PREFIX}portal-env:${DOCKER_TAG}-onbuild
+
+EXPOSE 3004

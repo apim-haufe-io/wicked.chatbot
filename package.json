@@ -1,0 +1,22 @@
+{
+  "name": "portal-chatbot",
+  "version": "0.9.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/chatbot"
+  },
+  "dependencies": {
+    "async": "2.0.1",
+    "body-parser": "1.15.2",
+    "debug": "2.2.0",
+    "express": "4.14.0",
+    "morgan": "1.7.0",
+    "mustache": "2.2.1",
+    "portal-env": "../portal-env.tgz",
+    "request": "2.74.0"
+  },
+  "jshintConfig": {
+    "node": true,
+    "esversion": 6
+  }
+}
