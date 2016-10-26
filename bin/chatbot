@@ -7,12 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('portal-chatbot:main');
 var http = require('http');
-
-var envReader = require('portal-env');
-
-var environment = app.get('env');
-if (!environment)
-    throw new Error('Environment variable NODE_ENV must be set.');
+var async = require('async');
+var wicked = require('wicked-sdk');
 
 var chatbot = require('../chatbot');
 
@@ -23,18 +19,6 @@ var chatbot = require('../chatbot');
 var port = normalizePort(process.env.PORT || '3004');
 app.set('port', port);
 
-var apiUrl = envReader.resolveApiUrl();
-app.set('api_url', apiUrl);
-
-var myUrl = process.env.PORTAL_CHATBOT_URL;
-if (!myUrl) {
-    myUrl = envReader.guessServiceUrl('portal-chatbot', '3004');
-    console.log('Environment variable PORTAL_CHATBOT_URL is not set, defaulting to ' + myUrl + '. If this is not correct, please set before starting this process.');
-}
-if (!myUrl.endsWith('/')) // Add a trailing slash here.
-    myUrl = myUrl + '/';
-app.set('my_url', myUrl);
-
 // Create HTTP server.
 var server = http.createServer(app);
 
@@ -43,11 +27,19 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
-envReader.awaitUrl(apiUrl + 'ping', -1, 5000, function (err, result) {
+// Init wicked SDK and register a machine user.
+async.series([
+    callback => wicked.initialize(callback),
+    callback => wicked.initMachineUser('chatbot', callback),
+], function (err) {
     if (err) {
         debug('Failed waiting for API.');
         throw err;
     }
+
+    // Remember some URLs
+    app.set('api_url', wicked.getInternalApiUrl());
+    app.set('my_url', wicked.getInternalChatbotUrl());
 
     chatbot.init(app, function (err) {
         if (err) {
