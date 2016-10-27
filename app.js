@@ -52,7 +52,11 @@ app.get('/ping', function (req, res, next) {
         message: 'Up and running',
         uptime: (utils.getUtc() - app._startupSeconds),
         healthy: true,
-        pingUrl: app.get('my_url') + 'ping'
+        pingUrl: app.get('my_url') + 'ping',
+        version: utils.getVersion(),
+        gitLastCommit: utils.getGitLastCommit(),
+        gitBranch: utils.getGitBranch(),
+        buildDate: utils.getBuildDate()
     }; 
     if (!app.initialized) {
         health.healthy = 2;
