@@ -11,6 +11,7 @@ var async = require('async');
 var wicked = require('wicked-sdk');
 
 var chatbot = require('../chatbot');
+var utils = require('../utils');
 
 /**
  * Get port from environment and store in Express.
@@ -27,9 +28,14 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
+const wickedOptions = {
+    userAgentName: 'wicked.portal-chatbot',
+    userAgentVersion: utils.getVersion()
+};
+
 // Init wicked SDK and register a machine user.
 async.series([
-    callback => wicked.initialize(callback),
+    callback => wicked.initialize(wickedOptions, callback),
     callback => wicked.initMachineUser('chatbot', callback),
 ], function (err) {
     if (err) {

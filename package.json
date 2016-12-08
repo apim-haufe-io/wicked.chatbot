@@ -1,5 +1,5 @@
 {
-  "version": "0.10.1",
+  "version": "0.11.0",
   "private": true,
   "dependencies": {
     "async": "2.0.1",
@@ -9,7 +9,7 @@
     "morgan": "1.7.0",
     "mustache": "2.2.1",
     "request": "2.74.0",
-    "wicked-sdk": "^0.10.7"
+    "wicked-sdk": "^0.11.1"
   },
   "scripts": {
     "start": "node ./bin/chatbot"
