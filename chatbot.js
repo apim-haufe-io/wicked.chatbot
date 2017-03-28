@@ -63,7 +63,8 @@ chatbot.deinit = function (app, done) {
 chatbot.initInterestingEvents = function (chatbotGlobals) {
     debug('initInterestingEvents()');
     if (!chatbotGlobals.chatbot ||
-        !chatbotGlobals.chatbot.events) {
+        !chatbotGlobals.chatbot.events ||
+        !chatbotGlobals.chatbot.useChatbot) {
         return;
     }
 
