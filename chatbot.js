@@ -105,6 +105,8 @@ chatbot.handleEvent = function (app, event, done) {
         var text = mustache.render(messageTemplate, viewModel);
 
         var hookUrls = app.chatbotGlobals.chatbot.hookUrls;
+        if (!hookUrls)
+            hookUrls = [];
         async.each(hookUrls, function (hookUrl, callback) {
             // Post to the hook URL
             var payload = {
