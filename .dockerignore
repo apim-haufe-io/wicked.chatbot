@@ -2,3 +2,5 @@ node_modules
 *.log
 .gitignore
 Dockerfile
+git_*
+
