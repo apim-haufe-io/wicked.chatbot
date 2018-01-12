@@ -1,5 +1,5 @@
 {
-  "version": "0.12.2",
+  "version": "0.12.3",
   "private": true,
   "dependencies": {
     "async": "2.0.1",
