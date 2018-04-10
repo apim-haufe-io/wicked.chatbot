@@ -30,7 +30,8 @@ server.on('listening', onListening);
 
 const wickedOptions = {
     userAgentName: 'wicked.portal-chatbot',
-    userAgentVersion: utils.getVersion()
+    userAgentVersion: utils.getVersion(),
+    doNotPollConfigHash: true
 };
 
 // Init wicked SDK and register a machine user.
