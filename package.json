@@ -9,7 +9,7 @@
     "morgan": "1.7.0",
     "mustache": "2.2.1",
     "request": "2.74.0",
-    "wicked-sdk": "^0.12.0"
+    "wicked-sdk": "file:../wicked.node-sdk/wicked-sdk-1.0.0.tgz"
   },
   "scripts": {
     "start": "node ./bin/chatbot"
