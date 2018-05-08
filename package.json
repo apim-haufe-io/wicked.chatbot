@@ -8,6 +8,7 @@
     "express": "4.15.3",
     "morgan": "1.7.0",
     "mustache": "2.2.1",
+    "portal-env": "file:../portal-env-1.0.0.tgz",
     "request": "2.74.0",
     "wicked-sdk": "file:wicked-sdk.tgz"
   },
