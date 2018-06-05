@@ -1,18 +1,18 @@
 'use strict';
 
-var request = require('request');
-var debug = require('debug')('portal-chatbot:utils');
-var wicked = require('wicked-sdk');
-var fs = require('fs');
-var path = require('path');
+const request = require('request');
+const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:utils');
+const wicked = require('wicked-sdk');
+const fs = require('fs');
+const path = require('path');
 
-var utils = function() { };
+const utils = function () { };
 
 utils.getUtc = function () {
     return Math.floor((new Date()).getTime() / 1000);
 };
 
-utils.getJson = function(ob) {
+utils.getJson = function (ob) {
     if (ob instanceof String || typeof ob === "string") {
         if (ob === "")
             return null;
@@ -21,31 +21,31 @@ utils.getJson = function(ob) {
     return ob;
 };
 
-utils.getText = function(ob) {
+utils.getText = function (ob) {
     if (ob instanceof String || typeof ob === "string")
         return ob;
     return JSON.stringify(ob, null, 2);
 };
 
-utils.getIndexBy = function(anArray, predicate) {
-    for (var i=0; i<anArray.length; ++i) {
+utils.getIndexBy = function (anArray, predicate) {
+    for (let i = 0; i < anArray.length; ++i) {
         if (predicate(anArray[i]))
             return i;
     }
     return -1;
 };
 
-utils.apiGet = function(app, url, callback) {
+utils.apiGet = function (app, url, callback) {
     debug('apiGet() ' + url);
     wicked.apiGet(url, callback);
 };
 
-utils.apiPut = function(app, url, body, callback) {
+utils.apiPut = function (app, url, body, callback) {
     debug('apiPut() ' + url);
     wicked.apiPut(url, body, callback);
 };
 
-utils.apiDelete = function(app, url, callback) {
+utils.apiDelete = function (app, url, callback) {
     debug('apiDelete() ' + url);
     wicked.apiDelete(url, callback);
 };

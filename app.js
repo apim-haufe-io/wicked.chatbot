@@ -1,14 +1,14 @@
-var express = require('express');
-var logger = require('morgan');
-var bodyParser = require('body-parser');
-var async = require('async');
-var debug = require('debug')('portal-chatbot:app');
-var correlationIdHandler = require('wicked-sdk').correlationIdHandler();
+const express = require('express');
+const logger = require('morgan');
+const bodyParser = require('body-parser');
+const async = require('async');
+const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:app');
+const correlationIdHandler = require('wicked-sdk').correlationIdHandler();
 
-var chatbot = require('./chatbot');
-var utils = require('./utils');
+const chatbot = require('./chatbot');
+const utils = require('./utils');
 
-var app = express();
+const app = express();
 app.initialized = false;
 app.lastErr = false;
 
@@ -47,7 +47,7 @@ app.post('/', function (req, res, next) {
 
 app._startupSeconds = utils.getUtc();
 app.get('/ping', function (req, res, next) {
-    var health = {
+    const health = {
         name: 'chatbot',
         message: 'Up and running',
         uptime: (utils.getUtc() - app._startupSeconds),
@@ -73,11 +73,11 @@ app.get('/ping', function (req, res, next) {
 
 function processWebhooks(app, webhooks, callback) {
     debug('processWebhooks()');
-    var baseUrl = app.get('api_url');
+    const baseUrl = app.get('api_url');
 
     async.eachSeries(webhooks, function (event, done) {
         // Brainfucking callback and closure orgy
-        var acknowledgeEvent = function (ackErr) {
+        const acknowledgeEvent = function (ackErr) {
             if (ackErr)
                 return ackCallback(ackErr);
             utils.apiDelete(app, 'webhooks/events/chatbot/' + event.id, done);
@@ -97,7 +97,7 @@ function processWebhooks(app, webhooks, callback) {
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     debug("Not found: " + req.path);
-    var err = new Error('Not Found');
+    const err = new Error('Not Found');
     err.status = 404;
     next(err);
 });

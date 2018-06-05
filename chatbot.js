@@ -1,12 +1,12 @@
-var request = require('request');
-var async = require('async');
-var mustache = require('mustache');
-var debug = require('debug')('portal-chatbot:chatbot');
+const request = require('request');
+const async = require('async');
+const mustache = require('mustache');
+const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:chatbot');
 
-var Messages = require('./messages.json');
-var utils = require('./utils');
+const Messages = require('./messages.json');
+const utils = require('./utils');
 
-var chatbot = function () { };
+const chatbot = function () { };
 
 chatbot.interestingEvents = {};
 chatbot.chatbotTemplates = null;
@@ -68,11 +68,11 @@ chatbot.initInterestingEvents = function (chatbotGlobals) {
         return;
     }
 
-    for (var message in Messages) {
+    for (let message in Messages) {
         if (chatbotGlobals.chatbot.events[message]) {
-            var thisMessage = Messages[message];
-            var eventId = thisMessage.entity + '.' + thisMessage.action;
-            var messageTemplate = chatbot.chatbotTemplates[message];
+            const thisMessage = Messages[message];
+            const eventId = thisMessage.entity + '.' + thisMessage.action;
+            const messageTemplate = chatbot.chatbotTemplates[message];
             if (!messageTemplate)
                 throw new Error('The chatbot message template is missing for event "' + message + '".');
             chatbot.interestingEvents[eventId] = messageTemplate;
@@ -83,15 +83,15 @@ chatbot.initInterestingEvents = function (chatbotGlobals) {
 chatbot.isEventInteresting = function (event) {
     debug('isEventInteresting()');
     debug(event);
-    var eventId = event.entity + '.' + event.action;
+    const eventId = event.entity + '.' + event.action;
     return !!chatbot.interestingEvents[eventId];
 };
 
 chatbot.handleEvent = function (app, event, done) {
     debug('handleEvent()');
     debug(event);
-    var eventId = event.entity + '.' + event.action;
-    var messageTemplate = chatbot.interestingEvents[eventId];
+    const eventId = event.entity + '.' + event.action;
+    const messageTemplate = chatbot.interestingEvents[eventId];
 
     if (!event.data)
         return done(null);
@@ -102,14 +102,14 @@ chatbot.handleEvent = function (app, event, done) {
         if (err)
             return done(err);
 
-        var text = mustache.render(messageTemplate, viewModel);
+        const text = mustache.render(messageTemplate, viewModel);
 
-        var hookUrls = app.chatbotGlobals.chatbot.hookUrls;
+        let hookUrls = app.chatbotGlobals.chatbot.hookUrls;
         if (!hookUrls)
             hookUrls = [];
         async.each(hookUrls, function (hookUrl, callback) {
             // Post to the hook URL
-            var payload = {
+            const payload = {
                 username: app.chatbotGlobals.chatbot.username,
                 icon_url: app.chatbotGlobals.chatbot.icon_url,
                 text: text
@@ -128,10 +128,10 @@ chatbot.handleEvent = function (app, event, done) {
                     debug(apiBody);
                     console.error(utils.getText(apiBody));
                 }
-                    
+
                 return callback(null);
             });
-        }, function(err, results) {
+        }, function (err, results) {
             if (err) {
                 debug(err);
                 console.error(err);
@@ -152,8 +152,8 @@ function buildViewModel(app, event, callback) {
         if (err)
             return callback(err);
 
-        var portalUrl = getPortalUrl(app);
-        var applicationLink = null;
+        const portalUrl = getPortalUrl(app);
+        let applicationLink = null;
         if (event.data.applicationId)
             applicationLink = portalUrl + '/applications/' + event.data.applicationId;
         callback(null, {
