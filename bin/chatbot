@@ -61,7 +61,7 @@ async.series([
             });
         });
 
-        info('INITIALIZATION FINISHED');
+        info('====== INITIALIZATION FINISHED ======');
         
         app.initialized = true;
     });

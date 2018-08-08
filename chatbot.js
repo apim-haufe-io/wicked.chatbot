@@ -52,7 +52,7 @@ chatbot.init = function (app, done) {
 
 chatbot.deinit = function (app, done) {
     debug('deinit()');
-    utils.apiDelete(app, 'webhooks/listeners/chatbot', done);
+    wicked.deleteWebhookListener('chatbot', done);
 };
 
 chatbot.initInterestingEvents = function (chatbotGlobals) {

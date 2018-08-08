@@ -3,7 +3,8 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 const async = require('async');
 const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:app');
-const correlationIdHandler = require('wicked-sdk').correlationIdHandler();
+const wicked = require('wicked-sdk');
+const correlationIdHandler = wicked.correlationIdHandler();
 
 const chatbot = require('./chatbot');
 const utils = require('./utils');
@@ -80,7 +81,7 @@ function processWebhooks(app, webhooks, callback) {
         const acknowledgeEvent = function (ackErr) {
             if (ackErr)
                 return ackCallback(ackErr);
-            utils.apiDelete(app, 'webhooks/events/chatbot/' + event.id, done);
+            wicked.deleteWebhookEvent('chatbot', event.id, done);
         };
         if (chatbot.isEventInteresting(event)) {
             chatbot.handleEvent(app, event, acknowledgeEvent);
