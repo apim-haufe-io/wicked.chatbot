@@ -25,8 +25,8 @@ chatbot.init = function (app, done) {
             }, callback);
         },
         getGlobals: function (callback) {
-            const globals = wicked.getGlobals();
-            return callback(null, globals);
+            const chatbotGlobals = wicked.getGlobals();
+            return callback(null, chatbotGlobals);
         },
         getTemplates: function (callback) {
             debug('Getting templates...');
