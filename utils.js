@@ -1,8 +1,6 @@
 'use strict';
 
-const request = require('request');
 const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:utils');
-const wicked = require('wicked-sdk');
 const fs = require('fs');
 const path = require('path');
 
@@ -35,21 +33,6 @@ utils.getIndexBy = function (anArray, predicate) {
     return -1;
 };
 
-utils.apiGet = function (app, url, callback) {
-    debug('apiGet() ' + url);
-    wicked.apiGet(url, callback);
-};
-
-utils.apiPut = function (app, url, body, callback) {
-    debug('apiPut() ' + url);
-    wicked.apiPut(url, body, callback);
-};
-
-utils.apiDelete = function (app, url, callback) {
-    debug('apiDelete() ' + url);
-    wicked.apiDelete(url, callback);
-};
-
 utils._packageVersion = null;
 utils.getVersion = function () {
     if (!utils._packageVersion) {
@@ -60,7 +43,7 @@ utils.getVersion = function () {
                 if (packageInfo.version)
                     utils._packageVersion = packageInfo.version;
             } catch (ex) {
-                console.error(ex);
+                error(ex);
             }
         }
         if (!utils._packageVersion) // something went wrong

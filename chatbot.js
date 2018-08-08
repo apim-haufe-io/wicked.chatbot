@@ -1,5 +1,6 @@
 const request = require('request');
 const async = require('async');
+const wicked = require('wicked-sdk');
 const mustache = require('mustache');
 const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:chatbot');
 
@@ -18,24 +19,18 @@ chatbot.init = function (app, done) {
     async.parallel({
         registerWebhook: function (callback) {
             debug('Registering as listener.');
-            putPayload = {
+            wicked.upsertWebhookListener('chatbot', {
                 id: 'chatbot',
                 url: myUrl
-            };
-            utils.apiPut(app, 'webhooks/listeners/chatbot', putPayload, callback);
+            }, callback);
         },
         getGlobals: function (callback) {
-            debug('Getting global settings...');
-            utils.apiGet(app, 'globals', function (err, chatbotGlobals) {
-                if (err)
-                    return callback(err);
-                debug('Retrieved global settings successfully.');
-                return callback(null, chatbotGlobals);
-            });
+            const globals = wicked.getGlobals();
+            return callback(null, globals);
         },
         getTemplates: function (callback) {
             debug('Getting templates...');
-            utils.apiGet(app, 'templates/chatbot', function (err, chatbotTemplates) {
+            wicked.getChatbotTemplates(function (err, chatbotTemplates) {
                 if (err)
                     return callback(err);
                 debug('Retrieved templates successfully.');
@@ -126,15 +121,14 @@ chatbot.handleEvent = function (app, event, done) {
                     debug('Posting to Chatbot failed: Status ' + apiResponse.statusCode);
                     debug(apiResponse);
                     debug(apiBody);
-                    console.error(utils.getText(apiBody));
+                    error(utils.getText(apiBody));
                 }
 
                 return callback(null);
             });
         }, function (err, results) {
             if (err) {
-                debug(err);
-                console.error(err);
+                error(err);
             }
             done(null);
         });
@@ -148,25 +142,41 @@ function getPortalUrl(app) {
 
 function buildViewModel(app, event, callback) {
     debug('buildViewModel()');
-    utils.apiGet(app, 'users/' + event.data.userId, function (err, userInfo) {
+    wicked.getUser(event.data.userId, function (err, userInfo) {
         if (err)
             return callback(err);
+        // Try to get the name of the user; but if there is none, just use the email address
+        // of the user as the user's name (getRegistration must not provoke an error in this case).
+        wicked.getUserRegistrations('wicked', event.data.userId, function (err, registrations) {
+            let reg = null;
+            if (err) {
+                warn(`Could not retrieve registration for user ${event.data.userId} (${userInfo.email})`);
+            } else {
+                // There should be exactly one registration
+                if (registrations.items.length !== 1) {
+                    warn(`User with user ID ${event.data.userId} does not have a registration for pool 'wicked'`);
+                    reg = {
+                        name: userInfo.email
+                    };
+                } else {
+                    reg = registrations.items[0];
+                }
+            }
 
-        const portalUrl = getPortalUrl(app);
-        let applicationLink = null;
-        if (event.data.applicationId)
-            applicationLink = portalUrl + '/applications/' + event.data.applicationId;
-        callback(null, {
-            userId: event.data.userId,
-            name: userInfo.name,
-            email: userInfo.email,
-            firstName: userInfo.firstName,
-            lastName: userInfo.lastName,
-            apiId: event.data.apiId,
-            applicationId: event.data.applicationId,
-            approvalsLink: portalUrl + '/admin/approvals',
-            userLink: portalUrl + '/users/' + event.data.userId,
-            applicationLink: applicationLink
+            const portalUrl = getPortalUrl(app);
+            let applicationLink = null;
+            if (event.data.applicationId)
+                applicationLink = portalUrl + '/applications/' + event.data.applicationId;
+            callback(null, {
+                userId: event.data.userId,
+                email: userInfo.email,
+                name: reg.name,
+                apiId: event.data.apiId,
+                applicationId: event.data.applicationId,
+                approvalsLink: portalUrl + '/admin/approvals',
+                userLink: portalUrl + '/users/' + event.data.userId,
+                applicationLink: applicationLink
+            });
         });
     });
 }

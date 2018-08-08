@@ -36,7 +36,7 @@ app.post('/', function (req, res, next) {
     processWebhooks(app, req.body, function (err) {
         req.app.processingWebhooks = false;
         if (err) {
-            console.error(err);
+            error(err);
             app.lastErr = err;
             return res.status(500).json(err);
         }
