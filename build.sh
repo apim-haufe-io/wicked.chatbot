@@ -33,7 +33,7 @@ echo "============================================"
 export BUILD_ALPINE=""
 perl -pe 's;(\\*)(\$([a-zA-Z_][a-zA-Z_0-9]*)|\$\{([a-zA-Z_][a-zA-Z_0-9]*)\})?;substr($1,0,int(length($1)/2)).($2&&length($1)%2?$2:$ENV{$3||$4});eg' Dockerfile.template > Dockerfile
 normalImageName="${DOCKER_PREFIX}chatbot:${DOCKER_TAG}"
-docker build --pull -t ${normalImageName} .
+docker build --pull -t ${normalImageName} . --no-cache
 
 echo "============================================"
 echo "Building alpine image..."
@@ -42,7 +42,7 @@ echo "============================================"
 export BUILD_ALPINE="-alpine"
 perl -pe 's;(\\*)(\$([a-zA-Z_][a-zA-Z_0-9]*)|\$\{([a-zA-Z_][a-zA-Z_0-9]*)\})?;substr($1,0,int(length($1)/2)).($2&&length($1)%2?$2:$ENV{$3||$4});eg' Dockerfile.template > Dockerfile-alpine
 alpineImageName="${DOCKER_PREFIX}chatbot:${DOCKER_TAG}-alpine"
-docker build --pull -f Dockerfile-alpine -t ${alpineImageName} .
+docker build --pull -f Dockerfile-alpine -t ${alpineImageName} . --no-cache
 
 if [ "$1" = "--push" ]; then
     echo "============================================"
