@@ -1,3 +1,5 @@
+'use strict';
+
 const request = require('request');
 const async = require('async');
 const wicked = require('wicked-sdk');
