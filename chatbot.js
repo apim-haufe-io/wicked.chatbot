@@ -4,7 +4,7 @@ const request = require('request');
 const async = require('async');
 const wicked = require('wicked-sdk');
 const mustache = require('mustache');
-const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:chatbot');
+const { debug, warn, error } = require('portal-env').Logger('portal-chatbot:chatbot');
 
 const Messages = require('./messages.json');
 const utils = require('./utils');
@@ -119,14 +119,14 @@ chatbot.handleEvent = function (app, event, done) {
             // Post to the hook URL
             let payload = {};
             switch (target.type) {
-                case "SLACK/ROCKETCHAT":
+                case "slack":
                     payload = {
                         username: app.chatbotGlobals.chatbot.username,
                         icon_url: app.chatbotGlobals.chatbot.icon_url,
                         text: text,
                     };
                     break;
-                case "MSTEAMS":
+                case "msteams":
                     payload = {
                         "@context": "https://schema.org/extensions",
                         "@type": "MessageCard",
