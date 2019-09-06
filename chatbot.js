@@ -4,14 +4,15 @@ const request = require('request');
 const async = require('async');
 const wicked = require('wicked-sdk');
 const mustache = require('mustache');
-const { debug, info, warn, error } = require('portal-env').Logger('portal-chatbot:chatbot');
+const { debug, warn, error } = require('portal-env').Logger('portal-chatbot:chatbot');
 
 const Messages = require('./messages.json');
 const utils = require('./utils');
 
 const chatbot = function () { };
 
-chatbot.interestingEvents = {};
+chatbot.eventTargetMapping = {};
+chatbot.interestingTemplates = {};
 chatbot.chatbotTemplates = null;
 
 chatbot.init = function (app, done) {
@@ -60,19 +61,31 @@ chatbot.deinit = function (app, done) {
 chatbot.initInterestingEvents = function (chatbotGlobals) {
     debug('initInterestingEvents()');
     if (!chatbotGlobals.chatbot ||
-        !chatbotGlobals.chatbot.events ||
+        !chatbotGlobals.chatbot.targets ||
         !chatbotGlobals.chatbot.useChatbot) {
         return;
     }
 
     for (let message in Messages) {
-        if (chatbotGlobals.chatbot.events[message]) {
-            const thisMessage = Messages[message];
-            const eventId = thisMessage.entity + '.' + thisMessage.action;
-            const messageTemplate = chatbot.chatbotTemplates[message];
-            if (!messageTemplate)
-                throw new Error('The chatbot message template is missing for event "' + message + '".');
-            chatbot.interestingEvents[eventId] = messageTemplate;
+        const thisMessage = Messages[message];
+        const eventId = thisMessage.entity + '.' + thisMessage.action;
+        // Store all targets that are interesting for each event
+        for (let i in chatbotGlobals.chatbot.targets) {
+            const target = chatbotGlobals.chatbot.targets[i];
+            if (target.events[message]) {
+                if (!chatbot.eventTargetMapping[eventId]) {
+                    chatbot.eventTargetMapping[eventId] = [];
+                }
+
+                const messageTemplate = chatbot.chatbotTemplates[message];
+                if (!messageTemplate)
+                    throw new Error('The chatbot message template is missing for event "' + message + '".');
+                chatbot.interestingTemplates[eventId] = messageTemplate;
+                chatbot.eventTargetMapping[eventId].push({
+                   hookUrl: target.hookUrl,
+                   type: target.type,
+                });
+            }
         }
     }
 };
@@ -81,15 +94,15 @@ chatbot.isEventInteresting = function (event) {
     debug('isEventInteresting()');
     debug(event);
     const eventId = event.entity + '.' + event.action;
-    return !!chatbot.interestingEvents[eventId];
+    return !!chatbot.interestingTemplates[eventId];
 };
 
 chatbot.handleEvent = function (app, event, done) {
     debug('handleEvent()');
     debug(event);
     const eventId = event.entity + '.' + event.action;
-    const messageTemplate = chatbot.interestingEvents[eventId];
-
+    const messageTemplate = chatbot.interestingTemplates[eventId];
+    const targets = chatbot.eventTargetMapping[eventId];
     if (!event.data)
         return done(null);
     if (!event.data.userId)
@@ -101,19 +114,35 @@ chatbot.handleEvent = function (app, event, done) {
 
         const text = mustache.render(messageTemplate, viewModel);
 
-        let hookUrls = app.chatbotGlobals.chatbot.hookUrls;
-        if (!hookUrls)
-            hookUrls = [];
-        async.each(hookUrls, function (hookUrl, callback) {
+        async.each(targets, function (target, callback) {
+            // Payload depends on type of messenger
             // Post to the hook URL
-            const payload = {
-                username: app.chatbotGlobals.chatbot.username,
-                icon_url: app.chatbotGlobals.chatbot.icon_url,
-                text: text
-            };
+            let payload = {};
+            switch (target.type) {
+                case "slack":
+                    payload = {
+                        username: app.chatbotGlobals.chatbot.username,
+                        icon_url: app.chatbotGlobals.chatbot.icon_url,
+                        text: text,
+                    };
+                    break;
+                case "msteams":
+                    payload = {
+                        "@context": "https://schema.org/extensions",
+                        "@type": "MessageCard",
+                        "themeColor": "0072C6",
+                        "title": "Notification from " + app.chatbotGlobals.chatbot.username,
+                        "text": text,
+                    };
+                    break;
+                default:
+                    error("Unknown chatbot target " + target.type);
+                    return callback(null);
+            }
+
 
             request.post({
-                url: hookUrl,
+                url: target.hookUrl,
                 json: true,
                 body: payload
             }, function (chatbotErr, apiResponse, apiBody) {
