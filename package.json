@@ -9,14 +9,18 @@
     "mustache": "2.2.1",
     "portal-env": "file:../portal-env.tgz",
     "request": "2.88.0",
-    "wicked-sdk": "file:wicked-sdk.tgz"
+    "wicked-sdk": "file:wicked-sdk.tgz",
+    "snyk": "^1.316.1"
   },
   "scripts": {
-    "start": "node ./bin/chatbot"
+    "start": "node ./bin/chatbot",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "jshintConfig": {
     "node": true,
     "esversion": 6
   },
-  "name": "portal-chatbot"
+  "name": "portal-chatbot",
+  "snyk": true
 }
